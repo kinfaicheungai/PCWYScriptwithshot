@@ -15,7 +15,10 @@ export default function Home() {
   const [boardIndex, setBoardIndex] = useState(0);
   const [query, setQuery] = useState("");
   const [offlineStatus, setOfflineStatus] = useState("Offline");
+  const [portraitSplit, setPortraitSplit] = useState(58);
+  const [landscapeSplit, setLandscapeSplit] = useState(56);
   const scriptRef = useRef<HTMLDivElement>(null);
+  const splitRef = useRef<HTMLDivElement>(null);
   const sceneRefs = useRef<Record<number, HTMLElement | null>>({});
   const programmaticScroll = useRef(false);
   const releaseScrollTimer = useRef<number | null>(null);
@@ -124,8 +127,32 @@ export default function Home() {
 
   const board = scene.images[boardIndex];
 
+  const resizeSplit = (event: React.PointerEvent<HTMLDivElement>) => {
+    const container = splitRef.current;
+    if (!container) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const update = (clientX: number, clientY: number) => {
+      const rect = container.getBoundingClientRect();
+      const landscape = window.matchMedia("(orientation: landscape) and (max-height: 650px)").matches;
+      const raw = landscape
+        ? ((clientX - rect.left) / rect.width) * 100
+        : ((clientY - rect.top) / rect.height) * 100;
+      const value = Math.round(Math.max(35, Math.min(70, raw)));
+      if (landscape) setLandscapeSplit(value);
+      else setPortraitSplit(value);
+    };
+    update(event.clientX, event.clientY);
+    const move = (moveEvent: PointerEvent) => update(moveEvent.clientX, moveEvent.clientY);
+    const end = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end, { once: true });
+  };
+
   return (
-    <main className={`reader mode-${mode}`}>
+    <main className={`reader mode-${mode}`} style={{ "--portrait-split": `${portraitSplit}%`, "--landscape-split": `${landscapeSplit}%` } as React.CSSProperties}>
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">PC</span>
@@ -163,6 +190,7 @@ export default function Home() {
         <button className="scene-arrow" onClick={() => jumpTo(sceneIndex + 1)} disabled={sceneIndex === scenes.length - 1} aria-label="Next scene">→</button>
       </section>
 
+      <div className="content-split" ref={splitRef}>
       {mode !== "script" && (
         <section className="board-stage">
           {board ? (
@@ -176,6 +204,8 @@ export default function Home() {
           {scene.images.length > 1 && <div className="filmstrip">{scene.images.map((image, index) => <button key={image} className={index === boardIndex ? "selected" : ""} onClick={() => setBoardIndex(index)}><img src={image} alt="" /></button>)}</div>}
         </section>
       )}
+
+      {mode === "sync" && <div className="split-handle" onPointerDown={resizeSplit} role="separator" aria-label="Resize storyboard and screenplay panes"><span /></div>}
 
       {mode !== "boards" && (
         <section className="script-panel" ref={scriptRef} onScroll={onScriptScroll}>
@@ -192,6 +222,7 @@ export default function Home() {
           </div>
         </section>
       )}
+      </div>
     </main>
   );
 }
