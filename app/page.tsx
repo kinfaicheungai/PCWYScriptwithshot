@@ -8,6 +8,7 @@ type ScriptBlock = { type: "action" | "character" | "parenthetical" | "dialogue"
 type Scene = { number: number; title: string; blocks: ScriptBlock[]; images: string[] };
 
 const scenes = sceneData as Scene[];
+const APP_VERSION = "v1.2.0";
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>("sync");
@@ -15,6 +16,7 @@ export default function Home() {
   const [boardIndex, setBoardIndex] = useState(0);
   const [query, setQuery] = useState("");
   const [offlineStatus, setOfflineStatus] = useState("Offline");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [portraitSplit, setPortraitSplit] = useState(58);
   const [landscapeSplit, setLandscapeSplit] = useState(56);
   const scriptRef = useRef<HTMLDivElement>(null);
@@ -156,7 +158,7 @@ export default function Home() {
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">PC</span>
-          <div><strong>Painting Christmas With You</strong><small>Interactive storyboard reader</small></div>
+          <div><strong>Painting Christmas With You <em className="version">{APP_VERSION}</em></strong><small>Interactive storyboard reader</small></div>
         </div>
 
         <div className="scene-search">
@@ -175,11 +177,12 @@ export default function Home() {
           )}
         </div>
 
-        <nav className="modes" aria-label="View mode">
+        <button className="mobile-menu-toggle" onClick={() => setMenuOpen(value => !value)} aria-expanded={menuOpen} aria-controls="view-menu">View <span>{menuOpen ? "▴" : "▾"}</span></button>
+        <nav id="view-menu" className={`modes ${menuOpen ? "open" : ""}`} aria-label="View mode">
           <button className="offline-button" onClick={downloadOffline}>{offlineStatus}</button>
-          <button className={mode === "sync" ? "active" : ""} onClick={() => setMode("sync")}>Split</button>
-          <button className={mode === "boards" ? "active" : ""} onClick={() => setMode("boards")}>Boards</button>
-          <button className={mode === "script" ? "active" : ""} onClick={() => setMode("script")}>Script</button>
+          <button className={mode === "sync" ? "active" : ""} onClick={() => { setMode("sync"); setMenuOpen(false); }}>Split</button>
+          <button className={mode === "boards" ? "active" : ""} onClick={() => { setMode("boards"); setMenuOpen(false); }}>Boards</button>
+          <button className={mode === "script" ? "active" : ""} onClick={() => { setMode("script"); setMenuOpen(false); }}>Script</button>
         </nav>
       </header>
 
