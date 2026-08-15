@@ -1,4 +1,4 @@
-const CACHE = "pcwy-storyboard-v3";
+const CACHE = "pcwy-storyboard-v4";
 const SHELL = ["/", "/manifest.webmanifest", "/pwa-192.png", "/pwa-512.png"];
 
 self.addEventListener("install", event => {
