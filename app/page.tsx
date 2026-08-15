@@ -5,10 +5,10 @@ import sceneData from "./scenes.json";
 
 type Mode = "sync" | "boards" | "script";
 type ScriptBlock = { type: "action" | "character" | "parenthetical" | "dialogue"; text: string };
-type Scene = { number: number; title: string; blocks: ScriptBlock[]; images: string[] };
+type Scene = { number: string; title: string; blocks: ScriptBlock[]; images: string[] };
 
 const scenes = sceneData as Scene[];
-const APP_VERSION = "v1.2.0";
+const APP_VERSION = "v2.0.0";
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>("sync");
@@ -21,7 +21,7 @@ export default function Home() {
   const [landscapeSplit, setLandscapeSplit] = useState(56);
   const scriptRef = useRef<HTMLDivElement>(null);
   const splitRef = useRef<HTMLDivElement>(null);
-  const sceneRefs = useRef<Record<number, HTMLElement | null>>({});
+  const sceneRefs = useRef<Record<string, HTMLElement | null>>({});
   const programmaticScroll = useRef(false);
   const releaseScrollTimer = useRef<number | null>(null);
   const scene = scenes[sceneIndex];
@@ -70,7 +70,8 @@ export default function Home() {
   };
 
   const submitSearch = () => {
-    const exact = scenes.findIndex((item) => item.number === Number(query.replace(/\D/g, "")));
+    const normalized = query.trim().toUpperCase().replace(/^S(?:CENE)?\s*/, "");
+    const exact = scenes.findIndex((item) => item.number.toUpperCase() === normalized);
     if (exact >= 0) jumpTo(exact);
     else if (matches[0]) jumpTo(scenes.indexOf(matches[0]));
   };
